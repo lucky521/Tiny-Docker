@@ -10,7 +10,11 @@ Isolate target process's running environment from Linux.
 
 
 ## Build Container
-`lu-container-root`作为容器模拟环境的根目录。`build_script.sh`是将容器环境中所需要的系统文件拷贝到容器目录中去。`clean-sysfile.sh`清除这些系统文件，只保留该项目自己的文件。
+`lu-container-root`作为容器模拟环境的根目录。
+
+`build_script.sh`是将容器环境中所需要的系统文件拷贝到容器目录中去。
+
+`clean-sysfile.sh`清除这些系统文件，只保留该项目自己的文件。
 
 ## How to Run
 
