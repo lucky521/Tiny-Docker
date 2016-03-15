@@ -24,9 +24,21 @@ Run the following commands.
 $ git clone git@github.com:lucky521/Tiny-Docker.git
 $ cd Tiny-Docker/
 $ gcc lu-container.c -o docker
-$ sh build_script.sh
+$ sh ./build_script.sh
 $ sudo ./docker
 ```
 
 Then you will be in container world. It is like another linux shell. But the environment is virtual.
 
+## Test Environment
+
+```
+$ pwd
+$ ls
+$ ps -elf
+$ top
+$ tree
+$ netstat -ano
+$ free -m 
+
+```
