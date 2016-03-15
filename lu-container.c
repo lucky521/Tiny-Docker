@@ -20,12 +20,39 @@ childFunc(void *arg)
 {
 	struct utsname uts;
 	char *child_name = "lu-container";
+	int pid = getpid();
+	char command_buffer[100];
+
+	// configuration
+	int cpu_per = 20000;
+	char *memory_set = "500M";
 
 	printf("#######################################################\n");
 	printf("Welcome to container world!\n");
 
 	// re-mount
-	system("mount -t proc proc /proc");
+	system("mount -t proc proc ./lu-container-root/proc");
+	system("mount -t tmpfs cgroup_root ./lu-container-root/sys/fs/cgroup");
+	// cpu cgroup
+	system("mkdir ./lu-container-root/sys/fs/cgroup/cpu");
+	system("mount -t cgroup cpu -ocpu ./lu-container-root/sys/fs/cgroup/cpu");
+	system("test -d ./lu-container-root/sys/fs/cgroup/cpu/lu-container | mkdir -p ./lu-container-root/sys/fs/cgroup/cpu/lu-container");
+	memset(command_buffer, 0, 100);
+	sprintf(command_buffer, "echo %d >> ./lu-container-root/sys/fs/cgroup/cpu/lu-container/tasks", pid);
+	system(command_buffer);
+	memset(command_buffer, 0, 100);
+	sprintf(command_buffer, "echo %d > ./lu-container-root/sys/fs/cgroup/cpu/lu-container/cpu.cfs_quota_us", cpu_per);
+	system(command_buffer);
+	// memory cgroup
+	system("mkdir ./lu-container-root/sys/fs/cgroup/memory");
+	system("mount -t cgroup -omemory memory ./lu-container-root/sys/fs/cgroup/memory");
+	system("test -d ./lu-container-root/sys/fs/cgroup/memory/lu-container | mkdir -p ./lu-container-root/sys/fs/cgroup/memory/lu-container");
+	memset(command_buffer, 0, 100);
+	sprintf(command_buffer, "echo %d >> ./lu-container-root/sys/fs/cgroup/memory/lu-container/tasks", pid);
+	system(command_buffer);
+	memset(command_buffer, 0, 100);
+	sprintf(command_buffer, "echo %s > ./lu-container-root/sys/fs/cgroup/memory/lu-container/memory.limit_in_bytes", memory_set);
+	system(command_buffer);
 
 	//chroot
 	if( chdir("./lu-container-root") != 0  || chroot("./") != 0 || chdir("/") != 0)
@@ -39,9 +66,10 @@ childFunc(void *arg)
 		errExit("uname");
 	printf("uts.nodename in child:  %s\n", uts.nodename);
 
-	system("./hello");
-	system("pwd");
-	system("ls");
+
+	// run target process
+	system("./test-program/hello");
+//	system("./test-program/deadloop_1");
 	execv(bash_args[0], bash_args); //change current process to bash
 
 	/*
@@ -98,6 +126,9 @@ main(int argc, char *argv[])
 	printf("child has terminated\n");
 	printf("You leave container world.\n");
 	printf("#######################################################\n");
+	
+	// clean job
+	system("umount  ./lu-container-root/sys/fs/cgroup");
 
 	exit(EXIT_SUCCESS);
 }
